@@ -19,7 +19,7 @@ body{
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #0c2f54; /* Blue color from your invoice.css */
+    background: #6e7680; /* Blue color from your invoice.css */
     border-radius: 10px;
     border: 2px solid rgba(255, 255, 255, 0.3); /* Optional: Adds contrast */
 }
@@ -31,5 +31,5 @@ body{
 /* For Firefox */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #0c2f54 rgba(0, 0, 0, 0.1);
+    scrollbar-color: #6e7680 rgba(106, 106, 106, 0.1);
 }

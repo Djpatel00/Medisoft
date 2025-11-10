@@ -4,10 +4,9 @@ const { Schema, model } = mongoose;
 
 const BillSchema = new Schema(
   {
-    name:String,
-    
+    name:String,    
     aid: { type: mongoose.Schema.Types.ObjectId, ref: "appointment" },
-    id: { type: mongoose.Schema.Types.ObjectId },
+    pid: { type: mongoose.Schema.Types.ObjectId },
     date: {
       type: Date,
       required: true,
@@ -25,9 +24,10 @@ const BillSchema = new Schema(
       required: true,
       enum: ['pharmacy', 'doctor', 'lab','room','other'],
     },
+    //it will store 
     status: {
-      type: Boolean,
-      default: false,
+      type: String,
+      default: "f",
     },
     billed_date:Date,
   },

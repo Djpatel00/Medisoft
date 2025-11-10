@@ -13,7 +13,7 @@ import Skeleton from '@mui/material/Skeleton';
 
 // const patient = { pname: "Sayan Kandoi", pid: "P000000B", mobile: "987654309" }
 export default function App() {
-  const pid = "P000000B";
+  const pid = "P0000009";
   const dispatch = useDispatch();
   const patient = useSelector(getPatient);
   //Will be used for the navigation from one part to another

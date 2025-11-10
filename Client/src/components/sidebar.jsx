@@ -16,10 +16,14 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import Tooltip from '@mui/material/Tooltip';
 import * as Icons from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { getDrawerState, toggleDrawer } from '../redux/slices/drawerSlice';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { getDrawerState, toggleDrawer } from '../redux/slices/drawerSlice';
+import { toggleRefresh, selectRefresh } from '../redux/slices/refreshSlice';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const drawerWidth = 240;
 
@@ -84,78 +88,151 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
       ...closedMixin(theme),
       '& .MuiDrawer-paper': closedMixin(theme),
     }),
-  }),
+  })
 );
+
+const MemoizedSidebar = React.memo(({ arr, open, handleDrawerState, handleListItemClick }) => {
+  const theme = useTheme();
+  return (
+    <Drawer variant="permanent" open={open}>
+      <DrawerHeader>
+        <IconButton onClick={handleDrawerState}>
+          {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+        </IconButton>
+      </DrawerHeader>
+      <Divider />
+      <List>
+        {arr.map((item) => (
+          <ListItem key={item.label} disablePadding sx={{ display: 'block' }}>
+            <ListItemButton
+              sx={{
+                minHeight: 48,
+                justifyContent: open ? 'initial' : 'center',
+                px: 2.5,
+              }}
+              onClick={(event) => handleListItemClick(event, item.path)}
+            >
+              <ListItemIcon
+                sx={{
+                  minWidth: 0,
+                  mr: open ? 3 : 'auto',
+                  justifyContent: 'center',
+                }}
+              >
+                {React.createElement(Icons[item.icon])}
+              </ListItemIcon>
+              <ListItemText primary={item.label} sx={{ opacity: open ? 1 : 0 }} />
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
+    </Drawer>
+  );
+});
 
 export function SideBar({ children, arr, title }) {
   const theme = useTheme();
   const open = useSelector(getDrawerState);
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const [mobileOpen, setMobileOpen] = React.useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleDrawerState = () => {
-    dispatch(toggleDrawer());
+    if (isSmallScreen) {
+      setMobileOpen(!mobileOpen);
+    } else {
+      dispatch(toggleDrawer());
+    }
   };
 
   const handleListItemClick = (event, path) => {
     navigate(path);
+    if (isSmallScreen) {
+      setMobileOpen(false);
+    }
+  };
+
+  const refresh = useSelector(selectRefresh);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const refreshChildren = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    dispatch(toggleRefresh());
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 5000);
   };
 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar position="fixed" open={open}>
+      <AppBar position="fixed" open={!isSmallScreen && open}>
         <Toolbar>
           <IconButton
             color="inherit"
             aria-label="open drawer"
             onClick={handleDrawerState}
             edge="start"
-            sx={{ marginRight: 5, ...(open && { display: 'none' }) }}
+            sx={{ marginRight: 2, ...(open && !isSmallScreen && { display: 'none' }) }}
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h5" noWrap component="div">
+          <Typography variant="h5" noWrap component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
+          <Tooltip title="Refresh Section">
+            <IconButton color="inherit" onClick={refreshChildren} disabled={isRefreshing}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
-      <Drawer variant="permanent" open={open}>
-        <DrawerHeader>
-          <IconButton onClick={handleDrawerState}>
-            {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        </DrawerHeader>
-        <Divider />
-        <List>
-          {arr.map((item) => (
-            <ListItem key={item.label} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? 'initial' : 'center',
-                  px: 2.5,
-                }}
-                onClick={(event) => handleListItemClick(event, item.path)}
-              >
-                <ListItemIcon
-                  sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : 'auto',
-                    justifyContent: 'center',
-                  }}
-                >
-                  {React.createElement(Icons[item.icon])}
-                </ListItemIcon>
-                <ListItemText primary={item.label} sx={{ opacity: open ? 1 : 0 }} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-      </Drawer>
+
+      {/* Mobile Drawer */}
+      {isSmallScreen && (
+        <MuiDrawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            '& .MuiDrawer-paper': { width: drawerWidth },
+          }}
+        >
+          <DrawerHeader>
+            <IconButton onClick={() => setMobileOpen(false)}>
+              <ChevronLeftIcon />
+            </IconButton>
+          </DrawerHeader>
+          <Divider />
+          <List>
+            {arr.map((item) => (
+              <ListItem key={item.label} disablePadding>
+                <ListItemButton onClick={(event) => handleListItemClick(event, item.path)}>
+                  <ListItemIcon>{React.createElement(Icons[item.icon])}</ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </MuiDrawer>
+      )}
+
+      {/* Desktop Drawer */}
+      {!isSmallScreen && (
+        <MemoizedSidebar
+          arr={arr}
+          open={open}
+          handleDrawerState={handleDrawerState}
+          handleListItemClick={handleListItemClick}
+        />
+      )}
+
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerHeader />
-          {children}
+        <React.Fragment key={refresh}>{children}</React.Fragment>
       </Box>
     </Box>
   );

@@ -293,7 +293,7 @@ export default function App({ index, patient, setPatient, part, setPart,setOpd }
                 <Grid container size={{ xs: 12 }} spacing={2} sx={{ position: "absolute", bottom: "4px", p: 2 }}>
 
 
-                   {(index===2 || (part===2 && index===0) )&& <Grid size={{ xs: 6 }} >
+                   {(index===1 || (part===2 && index===0) )&& <Grid size={{ xs: 6 }} >
                         <Button variant="contained" fullWidth color="primary"
                             onClick={() => {
                                 setPart((prev) => (prev - 1) % 3)
@@ -312,7 +312,7 @@ export default function App({ index, patient, setPatient, part, setPart,setOpd }
                     </Grid>}
 
 
-                    <Grid size={{ xs: index===2? [1, 2].includes(part) ? 6 : 12 : part===2?6:12 }} >
+                    <Grid size={{ xs: index===1? [1, 2].includes(part) ? 6 : 12 : part===2?6:12 }} >
                         <Button variant="contained" fullWidth color="primary" type={part === 2 ? 'submit' : 'button'}
                             onClick={handleNext}
                             sx={{ height: "8vh", fontWeight: "bold", fontSize: "1.2rem" }}

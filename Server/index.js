@@ -13,6 +13,7 @@ import roomRoutes from './routes/roomRoutes.js';
 import memberRoutes from './routes/memberRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import fileUpload from 'express-fileupload';
+import billRoutes from './routes/billRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/lab', labRoutes);
 app.use('/room', roomRoutes);
 app.use('/member', memberRoutes);
 app.use('/appointment', appointmentRoutes);
+app.use('/bill',billRoutes);
 
 
 // Connecting to mongoose Database using MONGO_URI from .env

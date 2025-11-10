@@ -50,7 +50,8 @@ const UserSchema = new Schema(
             type: String,
             enum: ['M', 'F', 'O'],
             required: true
-        }, type: {
+        }, 
+        type: {
             type: String,
             enum: ['patient', 'employee']
         },

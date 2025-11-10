@@ -11,7 +11,29 @@ export const patientForm = ['fname', 'middlename', 'lname', 'dob', 'gender', 'mo
 export const patLabels = ["First Name", "Middle name", "Last Name", "Birth date", "Gender", "Mobile", "Email", "Address", "City ", "Pincode", "allergy", "conditions", "Others"];
 
 //values for Employee form.
-export const empLabels = ["First Name", "Middle name", "Last Name", "Birth date", "Gender", "Mobile", "Email", "Address", "City ", "Pincode", "Degree Name", "College Name", "Certificate", "Department"];
+export const empLabels = ["First Name", "Middle name", "Last Name", "Birth date", "Gender", "Mobile", "Email", "Address", "City ", "Pincode", "Degree Name", "College Name", "Certificate"];
 
-//values for patient form.
-export const empForm = ['fname', 'middlename', 'lname', 'dob', 'gender', 'mobile', 'email', 'address', 'city', 'pincode', 'degree', 'college', 'certificate', 'dep'];
+//values for Employee form.
+export const empForm = ['fname', 'middlename', 'lname', 'dob', 'gender', 'mobile', 'email', 'address', 'city', 'pincode', 'degree', 'college', 'certificate', 'dep','role'];
+
+export const initialPatientState = patientForm.reduce((obj, key) => {
+  let defaultValue = '';
+
+  // Assign 'none' to specific fields
+  if (['allergy', 'conditions', 'others'].includes(key)) {
+    defaultValue = 'none';
+  }
+  obj[key] = defaultValue;
+  return obj;
+}, {
+  type: 'patient' // Extra field not in patientForm
+});
+export const initialEmpState = empForm.reduce((obj, key) => {
+  let defaultValue = '';
+  obj[key] = defaultValue;
+  return obj;
+}, {
+  type: 'employee' // Extra field not in Employee
+});
+
+

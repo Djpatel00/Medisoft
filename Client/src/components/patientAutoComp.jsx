@@ -12,7 +12,7 @@ import {
 const arr = ["pname", "pid", "mobile"];
 const arr2 = ["Name", "ID", "Mobile"];
 
-export const PatientAutocomplete = ({ index, setPatient, patient,opd }) => {
+export const PatientAutocomplete = ({ index, setPatient, patient, opd }) => {
   const [value, setValue] = useState(null);
   const [isManualInput, setIsManualInput] = useState(false);
 
@@ -102,6 +102,7 @@ export const PatientAutocomplete = ({ index, setPatient, patient,opd }) => {
         if(!newValue)dispatch(clearPatient());
         dispatch(setActiveAutoComplete(null)); // Reset active field after selection
       }}
+      
       onInputChange={(event, newInputValue) => {
         const isValid = (() => {
           switch (index) {

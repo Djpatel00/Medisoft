@@ -6,6 +6,7 @@ import doctorPrescriptionReducer from './slices/doctorPrescriptionSlice';
 import medicineReducer from './slices/medicineAutoCompleteSlice';
 import patientAutoCompReducer from './slices/patientsAutoCompSlice';
 import patientReducer from './slices/patientSlice';
+import refereshReducer from './slices/refreshSlice';
 
 export const store = configureStore({
     reducer: {
@@ -16,5 +17,6 @@ export const store = configureStore({
         medicine:medicineReducer,
         patientAutoComp:patientAutoCompReducer,
         patient: patientReducer,
+        refresh: refereshReducer,
     }
 })

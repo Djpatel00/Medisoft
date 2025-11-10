@@ -46,7 +46,7 @@ export default function App() {
           >
             <Tab label="Take Patient Details" />
             <Tab label="Add Test Results" />
-            <Tab label="Done" />
+            {/* <Tab label="Done" /> */}
           </Tabs>
           {value === 0 && <Part0 detail={detail1} setDetail={setDetail1} index={0} patient={patient1} setPatient={setPatient1} nextTab1={nextTab1} setNextTab1={setNextTab1} />}
           {value === 1 && <Part0 detail={detail2} setDetail={setDetail2} index={1} patient={patient2} setPatient={setPatient2} nextTab1={nextTab2} setNextTab1={setNextTab2} />}

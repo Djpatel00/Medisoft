@@ -3,6 +3,8 @@ import { generateId } from '../utils/helperUtils.js';
 import { getDocTimings } from "../services/getDoctorTimings.js";
 import { getItem, updateHelper } from '../utils/helperUtils.js';
 import { SignUp, deleteLogin } from '../utils/authData.js';
+import mongoose from 'mongoose';
+import sendEmail from '../utils/sendEmail.js';
 
 // -------------------------- Common --------------------------
 
@@ -11,7 +13,8 @@ export const addMember = async (req, res) => {
 
     const body = req.body;
     console.log(body);
-
+    const session = await mongoose.startSession(); // Start a transaction session
+    session.startTransaction();
     try {
 
         const newM = new memberModel({
@@ -26,24 +29,38 @@ export const addMember = async (req, res) => {
             pincode: body.pincode,
             gender: body.gender,
         });
-        let id = "";
+        let id = "", userType = "",dep=null;
         if (body.type === 'patient') {
-            id = 'P' + await generateId('pid');
+            id = 'P' + await generateId('pid', session);
             newM.allergy = body.allergy;
             newM.conditions = body.conditions;
             newM.others = body.others;
-            newM.type = 'patient';
+            userType = 'patient';
         } else {
-            id = 'E' + await generateId('eid');
+            id = 'E' + await generateId('eid', session);
             newM.degree = body.degree;
             newM.college = body.college;
-            newM.dep = body.dep;
-            newM.type = 'employee';
+            dep= newM.dep = body.dep;
+            newM.role=body.role;
+            userType = 'employee';
         }
+
+        await SignUp(id, newM.fname + " " + newM.lname, userType, newM.mobile, newM.mobile, dep, session);
+
         newM.mid = id;
-        newM.save();
+        newM.type = userType
+
+        await newM.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+        console.log(body.email)
+        sendEmail(newM.email,1,{name: newM.fname + " " + newM.lname,id:newM.mid,password:newM.mobile,type:newM.type})
         res.status(200).json({ id: id, message: `Successfully registered ${body.type}`, show: true });
     } catch (e) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error("Error adding new Member:", e);
         console.log(e);
         res.status(500).json({ message: 'Internal server error' });
     }
@@ -56,13 +73,13 @@ export const getMemberWithId = async (req, res) => {
         const employee = await memberModel.findOne(
             { mid: id },
             {
-              type: 0,
-              mid: 0,
-              createdAt: 0,
-              updatedAt: 0
+                type: 0,
+                mid: 0,
+                createdAt: 0,
+                updatedAt: 0
             }
-          );
-          ;
+        );
+        ;
         res.status(200).json(employee);
     } catch (e) {
         res.status(500).json({ message: 'Internal server error' });
@@ -119,7 +136,7 @@ export const getPatientNamesId = async (req, res) => {
 //Get the patient names 
 export const getFilteredPatientNamesId = async (req, res) => {
     try {
-        const { search , flag = "1", opd } = req.query;
+        const { search, flag = "1", opd } = req.query;
 
         if (!search) return res.status(400).json({ message: "Search string required" });
 
@@ -133,16 +150,16 @@ export const getFilteredPatientNamesId = async (req, res) => {
                 { fname: regex },
                 { lname: regex }
             ];
-        } 
+        }
         else if (flag == "2") {
             matchCondition.mid = regex;
-        } 
+        }
         else if (flag == "3") {
             if (!/^\d+$/.test(search)) {
                 return res.status(400).json({ message: "Mobile search must be numeric", show: true });
             }
             matchCondition.$expr = { $regexMatch: { input: { $toString: "$mobile" }, regex: regex } };
-        } 
+        }
         else {
             return res.status(400).json({ message: "Invalid flag value", show: true });
         }
@@ -255,7 +272,7 @@ export const getDoctorByDepartment = async (req, res) => {
 }
 
 //update the member details
-export const updateMember = async (mid,updateFields,session) => {
+export const updateMember = async (mid, updateFields, session) => {
     if (!mid || Object.keys(updateFields).length === 0) {
         console.error('Invalid request. Provide mid and at least one field to update.');
         throw new Error('Invalid request. Provide mid and at least one field to update.');
@@ -265,7 +282,7 @@ export const updateMember = async (mid,updateFields,session) => {
         const result = await memberModel.findOneAndUpdate(
             { mid },
             updateFields,
-            { new: true,session }
+            { new: true, session }
         );
 
         if (!result) {
@@ -284,7 +301,7 @@ export const updateDoctorDetails = async (req, res) => {
     const { mid, ...updateFields } = req.body;
     console.log(req.body);
     try {
-        const result=await updateMember(mid, { $set: updateFields});
+        const result = await updateMember(mid, { $set: updateFields });
 
         res.status(200).json({ message: "Update Successfull", show: true, data: result });
 
@@ -298,15 +315,22 @@ export const updateDoctorDetails = async (req, res) => {
 //get roles and departments for admin
 export const getRolesDeps = async (req, res) => {
     const { option } = req.params;
+    const session = await mongoose.startSession(); // Start a transaction session
+    session.startTransaction();
     try {
-        const deps = await getItem('dep');
+        const deps = await getItem('dep', session);
         if (option === 'onlyDeps') {
             return res.status(200).json(deps['content']);
         }
-        const roles = await getItem('roles');
+        const roles = await getItem('roles', session);
 
+        await session.commitTransaction();
+        session.endSession();
         res.status(200).json([roles['content'], deps['content']]);
     } catch (e) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error("Error Fetching", e);
         res.status(500).json({ message: 'Internal server error' });
     }
 }
@@ -314,17 +338,26 @@ export const getRolesDeps = async (req, res) => {
 
 //update the roles or departments of the employee for the admin panel
 export const updateRoleDeps = async (req, res) => {
-
+    const { name, data } = req.body;
+    console.log(name, data);
+    const session = await mongoose.startSession(); // Start a transaction session
+    session.startTransaction();
     try {
-
-        const { name, data } = req.body;
-        console.log(name, data);
-        const result = await updateHelper(name, data);
+        const result = await updateHelper(name, data, session);
         if (!result) {
+            await session.abortTransaction(); // Rollback changes
+            session.endSession();
+            console.error("Error updating", error);
             return res.status(404).json({ message: "Member not found" });
         }
+
+        await session.commitTransaction();
+        session.endSession();
         res.status(200).json({ message: `Successfully updated the ${name}`, show: true, data: result });
     } catch (e) {
+        await session.abortTransaction(); // Rollback changes
+        session.endSession();
+        console.error("Error updating", e);
         res.status(500).json({ message: 'Internal server error' });
     }
 }

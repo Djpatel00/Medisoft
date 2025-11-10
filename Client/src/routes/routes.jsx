@@ -85,11 +85,7 @@ const routes = [
   { path: "/addipdcharge", element: <I4 /> },
   
   // Login
-  { path: "/", element: <L /> },
-
-
-   
-  
+  { path: "/", element: <L /> },  
    */
 ];
 

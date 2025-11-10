@@ -5,3 +5,5 @@ Client/.env
 Server/.env
 
 Server/node_modules/
+
+Server/uploads

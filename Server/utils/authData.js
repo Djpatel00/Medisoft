@@ -1,7 +1,8 @@
 import bcrypt from 'bcryptjs';
 import loginModel from '../models/login.js';
 
-export const SignUp = async (mid, name, role, password, security_phrase,dep) => {
+
+export const SignUp = async (mid, name, role, password, security_phrase,dep,session) => {
     try {
 
         // Hash the password before saving
@@ -20,8 +21,7 @@ export const SignUp = async (mid, name, role, password, security_phrase,dep) => 
         });
 
         // Save to the database
-        await newLogin.save();
-        return newLogin;
+        await newLogin.save({session});        
 
     } catch (error) {
         console.error(error);

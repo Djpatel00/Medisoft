@@ -36,6 +36,7 @@ export const bookAppointment = async (type, b, session) => {
       newA.schedule_date = Date.now();
     }
 
+    
     await newA.save({ session });
     // console.log(newA);
     return newA._id;
@@ -504,6 +505,7 @@ export const getAllBill = async (req, res) => {
       return res.status(400).json({ message: "Invalid request: Please provide valid details" });
     }
 
+    
     const bills = await appointmentModel.aggregate([
       { $match: { pid: pid } }, // Step 1: Get all appointments for the given pid
       {
@@ -516,7 +518,7 @@ export const getAllBill = async (req, res) => {
                 $expr: {
                   $and: [
                     { $eq: ["$aid", "$$aidObjId"] },  // Match _id directly with aid
-                    { $eq: ["$status", status === "true"] }  // ✅ Move status check here in bills table
+                    { $eq: ["$status", status === "true"] }
                   ]
                 }
               }
